@@ -7,59 +7,68 @@ use Illuminate\Http\Request;
 
 class ReceptionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    public function register(Request $request)
     {
-        //
+        try {
+            $request->validate([
+                'numero' => 'required|string|size:3',
+                'edificio' => 'required|string|max:30'
+            ]);
+            Reception::create([
+                'numero' => $request->numero,
+                'edificio' => $request->edificio
+            ]);
+            return response()->json(['message' => 'Registro exitoso'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function show()
     {
-        //
+        $receptions = Reception::all();
+        return response()->json([
+            'receptions' => $receptions
+        ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function showOne($id)
     {
-        //
+        $reception = Reception::find($id);
+        if (!$reception)
+            return response()->json(['message' => 'Recepcion no encontrada.'], 404);
+        return response()->json([
+            'receptions' => $reception
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Reception $reception)
+    public function edit(Request $request, $id)
     {
-        //
-    }
+        try {
+            $request->validate([
+                'numero' => 'required|string|size:3',
+                'edificio' => 'required|string|max:30'
+            ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Reception $reception)
-    {
-        //
-    }
+            $reception = Reception::find($id);
+            if (!$reception)
+                return response()->json(['message' => 'Recepcion no encontrada.'], 404);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Reception $reception)
-    {
-        //
-    }
+            $reception->update([
+                'numero' => $request->numero,
+                'edificio' => $request->edificio
+            ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Reception $reception)
-    {
-        //
+            return response()->json(['message' => 'Información actualizada exitosamente'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
 }
