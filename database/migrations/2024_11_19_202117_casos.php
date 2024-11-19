@@ -13,14 +13,9 @@ return new class extends Migration
     {
         Schema::create('casos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 50);
-            $table->integer('edad');
-            $table->string('telefono', 10);
-            $table->char('genero');
             $table->time('hora');
             $table->date('fecha');
             $table->string('desglose');
-            $table->decimal('pago', $precision = 12, $scale = 2);
             $table->unsignedBigInteger('id_doctor');
             $table->foreign('id_doctor')->references('id')->on('doctors');
             $table->unsignedBigInteger('id_reception');
@@ -34,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('casos');
+        //
     }
 };
