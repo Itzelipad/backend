@@ -8,21 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Caso extends Model
 {
     use HasFactory;
-    
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+
     protected $fillable = [
-        'nombre',
-        'edad',
-        'telefono',
-        'genero',
         'hora',
         'fecha',
         'desglose',
-        'pago',
+        'cantidad',
         'id_doctor',
         'id_reception',
     ];

@@ -17,7 +17,7 @@ class Doctor extends Model
     protected $fillable = [
         'nombre',
         'vinculacion',
-        'id_reception',
+        'reception_id',
 
     ];
 }

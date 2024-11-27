@@ -16,6 +16,7 @@ return new class extends Migration
             $table->time('hora');
             $table->date('fecha');
             $table->string('desglose');
+            $table->int('cantidad');
             $table->unsignedBigInteger('id_doctor');
             $table->foreign('id_doctor')->references('id')->on('doctors');
             $table->unsignedBigInteger('id_reception');

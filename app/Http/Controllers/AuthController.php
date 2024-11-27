@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+
+    //tested
     public function login(Request $request)
     {
         try {
@@ -36,17 +38,18 @@ class AuthController extends Controller
         }
     }
 
+    //tested
     public function logout()
     {
         try {
+            auth()->user()->update(['reception_id' => null]);
             auth()->user()->currentAccessToken()->delete();
-
             return response()->json([
-                'message' => 'Sesión cerrada con éxito',
+                'message' => 'Sesión cerrada con éxito.',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error al cerrar sesión',
+                'message' => 'Error al cerrar sesión.',
                 'error' => $e->getMessage(),
             ], 500);
         }

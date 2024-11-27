@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('usuario')->unique();
             $table->string('password');
+            $table->unsignedBigInteger('reception_id')->nullable();
+            $table->foreign('reception_id')->references('id')->on('receptions');
             $table->rememberToken();
             $table->timestamps();
         });

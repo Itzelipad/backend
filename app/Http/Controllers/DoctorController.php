@@ -7,59 +7,76 @@ use Illuminate\Http\Request;
 
 class DoctorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    //tested
+    public function register(Request $request)
     {
-        //
+        try {
+            $request->validate([
+                'nombre' => 'required|string|max:50',
+                'vinculacion' => 'required|boolean',
+                'reception_id' => 'required|exists:receptions,id',
+            ]);
+            Doctor::create([
+                'nombre' => $request->nombre,
+                'vinculacion' => $request->vinculacion,
+                'reception_id' => $request->reception_id
+            ]);
+            return response()->json([
+                'message' => 'doctor registrado con exito.'
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    //tested
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $request->validate([
+                'nombre' => 'required|string|max:50',
+                'reception_id' => 'required|exists:receptions,id',
+                'vinculacion' => 'required|boolean'
+            ]);
+            $doctor = Doctor::find($id);
+            $doctor->update([
+                'nombre' => $request->nombre,
+                'reception_id' => $request->reception_id,
+                'vinculacion' => $request->vinculacion
+            ]);
+            return response()->json([
+                'message' => 'Doctor actualizado con exito.'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    //tested
+    public function doctorReception($id)
     {
-        //
+        $doctors = Doctor::where('reception_id', $id)->get();
+        if ($doctors->isEmpty())
+            return response()->json([
+                'message' => 'No se encontraron doctores en esa recepcion.'
+            ], 404);
+        return response()->json([
+            'doctores' => $doctors
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Doctor $doctor)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Doctor $doctor)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Doctor $doctor)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Doctor $doctor)
-    {
-        //
+    //tested
+    public function show(){
+        $doctors = Doctor::all();
+        return response()->json([
+            'doctores' => $doctors
+        ]);
     }
 }
