@@ -454,6 +454,7 @@ class StatsController extends Controller
             ], 422);
         }
     }
+
     public function statsDoctorTable($id, Request $request)
     {
         $recepcion = Reception::find($id);
@@ -481,7 +482,7 @@ class StatsController extends Controller
                     $fechaFin = Carbon::now()->endOfWeek()->format('Y-m-d');
                     break;
                 case 'Todo el tiempo':
-                    $fechaInicio = Carbon::createFromFormat('Y-m-d', '2000-01-01');
+                    $fechaInicio = Carbon::createFromFormat('Y-m-d', '2000-01-01')->format('Y-m-d');
                     $fechaFin = Carbon::now()->endOfDay()->format('Y/m/d');
                     break;
                 case 'Rango de fechas':
@@ -529,7 +530,113 @@ class StatsController extends Controller
                 ];
             }
             return response()->json([
-                'informacion' => $response
+                'informacion' => $response,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    public function statsGeneralesTable(Request $request)
+    {
+        try {
+            // Validar el parámetro 'opciones'
+            $request->validate([
+                'opciones' => 'required|string',
+            ]);
+
+            // Establecer las fechas de inicio y fin basadas en la opción seleccionada
+            $fechaInicio = null;
+            $fechaFin = null;
+            switch ($request->opciones) {
+                case 'Hoy':
+                    $fechaInicio = Carbon::now()->startOfDay()->format('Y-m-d');
+                    $fechaFin = Carbon::now()->endOfDay()->format('Y-m-d');
+                    break;
+                case 'Esta semana':
+                    $fechaInicio = Carbon::now()->startOfWeek()->format('Y-m-d');
+                    $fechaFin = Carbon::now()->endOfWeek()->format('Y-m-d');
+                    break;
+                case 'Los últimos 30 días':
+                    $fechaInicio = Carbon::now()->subDays(30)->startOfDay()->format('Y-m-d');
+                    $fechaFin = Carbon::now()->endOfDay()->format('Y-m-d');
+                    break;
+                case 'Todo el tiempo':
+                    $fechaInicio = Carbon::createFromFormat('Y-m-d', '2000-01-01')->format('Y-m-d');
+                    $fechaFin = Carbon::now()->endOfDay()->format('Y-m-d');
+                    break;
+                case 'Rango de fechas':
+                    $fechaInicio = Carbon::createFromFormat('Y-m-d', $request->fecha_inicio)->format('Y-m-d');
+                    $fechaFin = Carbon::createFromFormat('Y-m-d', $request->fecha_fin)->format('Y-m-d');
+                    break;
+                default:
+                    return response()->json([
+                        'message' => 'Opción no reconocida'
+                    ], 404);
+            }
+
+            // Obtener los casos en el rango de fechas seleccionadas
+            $casos = Caso::whereBetween('fecha', [$fechaInicio, $fechaFin])->get();
+
+            // Agrupar los casos por fecha y desglose
+            $response = [];
+            foreach ($casos as $caso) {
+                $fecha = Carbon::parse($caso->fecha)->format('d-m-Y');
+                if (!isset($response[$fecha])) {
+                    $response[$fecha] = [
+                        'Consulta' => 0,
+                        'Revision' => 0,
+                        'Ingreso' => 0,
+                        'Espontaneo' => 0,
+                        'Seguro' => 0,
+                        'Total' => 0
+                    ];
+                }
+                switch ($caso->desglose) {
+                    case "Consulta":
+                        $response[$fecha]['Consulta'] += $caso->cantidad;
+                        break;
+                    case "Revisión":
+                        $response[$fecha]['Revision'] += $caso->cantidad;
+                        break;
+                    case "Ingreso":
+                        $response[$fecha]['Ingreso'] += $caso->cantidad;
+                        break;
+                    case "Espontáneo":
+                        $response[$fecha]['Espontaneo'] += $caso->cantidad;
+                        break;
+                    case "Seguro":
+                        $response[$fecha]['Seguro'] += $caso->cantidad;
+                        break;
+                    default:
+                }
+                $response[$fecha]['Total'] += $caso->cantidad;
+            }
+
+            // Formatear la respuesta para enviarla como JSON
+            $formattedResponse = [];
+            foreach ($response as $fecha => $motivos) {
+                $formattedResponse[] = [
+                    'fecha' => $fecha,
+                    'Consulta' => $motivos['Consulta'],
+                    'Revision' => $motivos['Revision'],
+                    'Ingreso' => $motivos['Ingreso'],
+                    'Espontaneo' => $motivos['Espontaneo'],
+                    'Seguro' => $motivos['Seguro'],
+                    'Total' => $motivos['Total']
+                ];
+            }
+
+            // Devolver la respuesta en formato JSON
+            return response()->json([
+                'informacion' => $formattedResponse,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

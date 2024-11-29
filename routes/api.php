@@ -25,6 +25,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //doctors
     Route::get('/mostrar-doctores/{id}', [DoctorController::class, 'doctorReception']);
+
+    //stats Recepcion
+    Route::post('/estadisticas-recepcion-graphic/{id}', [StatsController::class, 'statsReceptionGraphic']);
+    Route::post('/estadisticas-recepcion/{id}', [StatsController::class, 'statsReception']);
+
+    //stats Doctor
+    Route::post('/estadisticas-doctor-tabla/{id}',[StatsController::class,'statsDoctorTable']);
+    Route::post('/estadisticas-doctor/{id}', [StatsController::class, 'getStatsDoc']);
+    Route::post('/estadisticas-doctor-graphic/{id}', [StatsController::class, 'getStatsGraphic']);
 });
 
 Route::middleware(['auth:sanctum', 'role:1'])->group(function () {
@@ -46,18 +55,10 @@ Route::middleware(['auth:sanctum', 'role:1'])->group(function () {
     Route::get('/usuarios', [UserController::class, 'show']);
     Route::patch('/actualizar-contraseña/{id}', [UserController::class, 'updatePassword']);
 
-    //stats Doctor
-    Route::post('/estadisticas-doctor/{id}', [StatsController::class, 'getStatsDoc']);
-    Route::post('/estadisticas-doctor-graphic/{id}', [StatsController::class, 'getStatsGraphic']);
-    Route::post('/estadisticas-doctor-tabla/{id}',[StatsController::class,'statsDoctorTable']);
-
-    //stats Recepcion
-    Route::post('/estadisticas-recepcion-graphic/{id}', [StatsController::class, 'statsReceptionGraphic']);
-    Route::post('/estadisticas-recepcion/{id}', [StatsController::class, 'statsReception']);
-
     //stats General
     Route::post('/estadisticas-generales-graphic', [StatsController::class, 'statsGeneralesGraphic']);
     Route::post('/estadisticas-generales', [StatsController::class, 'statsGenerales']);
+    Route::post('/estadisticas-generales-tabla',[StatsController::class,'statsGeneralesTable']);
 
 });
 
@@ -71,4 +72,5 @@ Route::middleware(['auth:sanctum', 'role:0'])->group(function () {
 
     //receptions
     Route::get('/recepciones-disponibles', [ReceptionController::class, 'showAvailable']);
+    Route::get('/mostrar-recepcion/{id}', [ReceptionController::class, 'showOne']);
 });
